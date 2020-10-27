@@ -8,23 +8,9 @@ use Illuminate\Support\Facades\Validator;
 
 class BooksController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return Books::all();
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
     }
 
     public function store(Request $request)
@@ -48,18 +34,12 @@ class BooksController extends Controller
     public function show($bookid)
     {
         $book = Books::find($bookid);
-        return $book;
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        if ($book) {
+            return $book;
+        }
+        else {
+            return $this->errorResponse("Book not found","500");
+        }
     }
 
     /**
@@ -80,11 +60,17 @@ class BooksController extends Controller
             return response()->json($validator->messages(), 200);
         }
         $book = Books::find($bookid);
-        $book->name = $request->json()->get('name');
-        $book->author = $request->json()->get('author');
-        $book->description = $request->json()->get('description');
-        $book->save();
-        return $book;
+        if ($book)
+        {
+            $book->name = $request->json()->get('name');
+            $book->author = $request->json()->get('author');
+            $book->description = $request->json()->get('description');
+            $book->save();
+            return $book;
+        }
+        else {
+            $this->errorResponse("Book not found",500);
+        }
     }
 
     /**
@@ -96,6 +82,22 @@ class BooksController extends Controller
     public function destroy($bookid)
     {
         $book = Books::find($bookid);
+        if ($book)
+        {
+            $book->delete();
+        }
+        else {
+            return $this->errorResponse("Book not found","500");
+        }
+    }
+
+    protected function errorResponse($message = null, $code)
+    {
+        return response()->json([
+            'status'=>'Error',
+            'message' => $message,
+            'data' => null
+        ], $code);
     }
 }
 
